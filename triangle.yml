@@ -1,0 +1,56 @@
+#
+#
+
+config:
+  # the VIRL host & port
+  host: {{ env['VIRL_STD_HOST'] or "localhost" }}
+  port: {{ env['VIRL_STD_PORT'] or "19399" }}
+  # username and password
+  user: {{ env['VIRL_USER'] or "guest" }}
+  password: {{ env['VIRL_PASS'] or "guest" }}
+  # loglevel (0-4, 4=Debug)
+  loglevel: 2
+  # default wait time (spinup / actions)
+  wait: 300
+  #parallel: 1
+
+
+sims:
+- topo: triangle.virl
+  nodes:
+  - name: iosv-1
+    actions:
+    - type: converge
+      transport: telnet
+      sleep: 10
+      in:
+      - 'sh ip route ospf | count ^O'
+      out:
+      - 'Number of lines which match regexp = 3'
+    - type: command
+      transport: telnet
+      in:
+      - 'ping 192.168.0.2'
+      out:
+      - 'Success rate is 100 percent \(5/5\)'
+    - type: command
+      transport: telnet
+      in:
+      - 'ping 192.168.0.3'
+      out:
+      - 'Success rate is 100 percent'
+    - type: command
+      transport: telnet
+      in:
+      - term len 0
+      - show version
+      - show run | inc hostname
+      - conf t
+      - hostname mychangedname
+      - end
+      - show run
+      - show ip interface brief
+      - show ip route
+      out:
+      - ''
+
